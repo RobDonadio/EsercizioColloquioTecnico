@@ -23,6 +23,7 @@ import {
     Category as CategoryIcon,
     Description as DescriptionIcon,
     Search as SearchIcon,
+    Download as DownloadIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
@@ -87,6 +88,54 @@ export default function CustomerListPage() {
         fetchCustomers();
     };
 
+    const handleExportXML = () => {
+        const xmlContent = convertToXML(list);
+        const blob = new Blob([xmlContent], { type: "application/xml" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "customers.xml";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const convertToXML = (data: CustomerListQuery[]): string => {
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<customers>\n';
+        
+        data.forEach(customer => {
+            xml += '  <customer>\n';
+            xml += `    <id>${escapeXml(customer.id.toString())}</id>\n`;
+            xml += `    <name>${escapeXml(customer.name)}</name>\n`;
+            xml += `    <address>${escapeXml(customer.address)}</address>\n`;
+            xml += `    <email>${escapeXml(customer.email)}</email>\n`;
+            xml += `    <phone>${escapeXml(customer.phone)}</phone>\n`;
+            xml += `    <iban>${escapeXml(customer.iban)}</iban>\n`;
+            
+            if (customer.customerCategory) {
+                xml += '    <customerCategory>\n';
+                xml += `      <code>${escapeXml(customer.customerCategory.code)}</code>\n`;
+                xml += `      <description>${escapeXml(customer.customerCategory.description)}</description>\n`;
+                xml += '    </customerCategory>\n';
+            }
+            
+            xml += '  </customer>\n';
+        });
+        
+        xml += '</customers>';
+        return xml;
+    };
+
+    const escapeXml = (unsafe: string): string => {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
     return (
         <>
             <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
@@ -103,25 +152,35 @@ export default function CustomerListPage() {
                 </Typography>
             ) : (
                 <>
-                    <Box sx={{ display: "flex", gap: 2, mb: 4, px: 2, justifyContent: "flex-start", flexWrap: "wrap" }}>
-                        <TextField
-                            label="Filter by Name"
-                            variant="outlined"
-                            size="small"
-                            value={nameFilter}
-                            onChange={(e) => setNameFilter(e.target.value)}
-                            sx={{ minWidth: 200 }}
-                        />
-                        <TextField
-                            label="Filter by Email"
-                            variant="outlined"
-                            size="small"
-                            value={emailFilter}
-                            onChange={(e) => setEmailFilter(e.target.value)}
-                            sx={{ minWidth: 200 }}
-                        />
-                        <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
-                            Filter
+                    <Box sx={{ display: "flex", gap: 2, mb: 4, px: 2, justifyContent: "space-between", flexWrap: "wrap" }}>
+                        <Box sx={{ display: "flex", gap: 2 }}>
+                            <TextField
+                                label="Filter by Name"
+                                variant="outlined"
+                                size="small"
+                                value={nameFilter}
+                                onChange={(e) => setNameFilter(e.target.value)}
+                                sx={{ minWidth: 200 }}
+                            />
+                            <TextField
+                                label="Filter by Email"
+                                variant="outlined"
+                                size="small"
+                                value={emailFilter}
+                                onChange={(e) => setEmailFilter(e.target.value)}
+                                sx={{ minWidth: 200 }}
+                            />
+                            <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
+                                Filter
+                            </Button>
+                        </Box>
+                        <Button 
+                            variant="outlined" 
+                            onClick={handleExportXML}
+                            disabled={list.length === 0}
+                            startIcon={<DownloadIcon />}
+                        >
+                            Export XML
                         </Button>
                     </Box>
 
