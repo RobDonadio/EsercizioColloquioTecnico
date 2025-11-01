@@ -1,5 +1,6 @@
 import {
     Box,
+    Button,
     CircularProgress,
     Paper,
     Table,
@@ -8,6 +9,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    TextField,
     Typography,
     styled,
     tableCellClasses,
@@ -20,6 +22,7 @@ import {
     AccountBalance as AccountBalanceIcon,
     Category as CategoryIcon,
     Description as DescriptionIcon,
+    Search as SearchIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 
@@ -49,11 +52,16 @@ export default function CustomerListPage() {
     const [list, setList] = useState<CustomerListQuery[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [nameFilter, setNameFilter] = useState<string>("");
+    const [emailFilter, setEmailFilter] = useState<string>("");
 
     const fetchCustomers = () => {
         setLoading(true);
+        const params = new URLSearchParams();
+        if (nameFilter) params.append("name", nameFilter);
+        if (emailFilter) params.append("email", emailFilter);
         
-        fetch("/api/customers/list")
+        fetch(`/api/customers/list?${params.toString()}`)
             .then((response) => {
                 return response.json();
             })
@@ -75,6 +83,10 @@ export default function CustomerListPage() {
         fetchCustomers();
     }, []);
 
+    const handleFilter = () => {
+        fetchCustomers();
+    };
+
     return (
         <>
             <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
@@ -89,77 +101,103 @@ export default function CustomerListPage() {
                 <Typography variant="body1" color="error" sx={{ textAlign: "center", mb: 2 }}>
                     {error}
                 </Typography>
-            ) : list.length > 0 ? (
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                        <TableHead>
-                            <TableRow>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <PersonIcon />
-                                        Name
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <LocationOnIcon />
-                                        Address
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <EmailIcon />
-                                        Email
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <PhoneIcon />
-                                        Phone
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <AccountBalanceIcon />
-                                        Iban
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <CategoryIcon />
-                                        Code
-                                    </Box>
-                                </StyledTableHeadCell>
-                                <StyledTableHeadCell>
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <DescriptionIcon />
-                                        Description
-                                    </Box>
-                                </StyledTableHeadCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {list.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                                >
-                                    <TableCell>{row.name}</TableCell>
-                                    <TableCell>{row.address}</TableCell>
-                                    <TableCell>{row.email}</TableCell>
-                                    <TableCell>{row.phone}</TableCell>
-                                    <TableCell>{row.iban}</TableCell>
-                                    <TableCell>{row.customerCategory?.code ?? ""}</TableCell>
-                                    <TableCell>{row.customerCategory?.description ?? ""}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
             ) : (
-                <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
-                    No customers found
-                </Typography>
+                <>
+                    <Box sx={{ display: "flex", gap: 2, mb: 4, px: 2, justifyContent: "flex-start", flexWrap: "wrap" }}>
+                        <TextField
+                            label="Filter by Name"
+                            variant="outlined"
+                            size="small"
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)}
+                            sx={{ minWidth: 200 }}
+                        />
+                        <TextField
+                            label="Filter by Email"
+                            variant="outlined"
+                            size="small"
+                            value={emailFilter}
+                            onChange={(e) => setEmailFilter(e.target.value)}
+                            sx={{ minWidth: 200 }}
+                        />
+                        <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
+                            Filter
+                        </Button>
+                    </Box>
+
+                    {list.length > 0 ? (
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                <TableHead>
+                                    <TableRow>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <PersonIcon />
+                                                Name
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <LocationOnIcon />
+                                                Address
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <EmailIcon />
+                                                Email
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <PhoneIcon />
+                                                Phone
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <AccountBalanceIcon />
+                                                Iban
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <CategoryIcon />
+                                                Code
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                        <StyledTableHeadCell>
+                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                                <DescriptionIcon />
+                                                Description
+                                            </Box>
+                                        </StyledTableHeadCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {list.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                                        >
+                                            <TableCell>{row.name}</TableCell>
+                                            <TableCell>{row.address}</TableCell>
+                                            <TableCell>{row.email}</TableCell>
+                                            <TableCell>{row.phone}</TableCell>
+                                            <TableCell>{row.iban}</TableCell>
+                                            <TableCell>{row.customerCategory?.code ?? ""}</TableCell>
+                                            <TableCell>{row.customerCategory?.description ?? ""}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
+                            No customers found
+                        </Typography>
+                    )}
+                </>
             )}
         </>
     );
