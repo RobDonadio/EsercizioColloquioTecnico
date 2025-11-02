@@ -14,6 +14,7 @@ import {
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
+import { ExportButton, escapeXml } from "../components/ExportButton";
 import { supplierApi } from "../services/api";
 import type { Supplier } from "../types/Supplier";
 
@@ -50,6 +51,23 @@ export default function SupplierListPage() {
 
   const handleFilter = () => {
     fetchSuppliers();
+  };
+
+  const convertToXML = (data: Supplier[]): string => {
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<suppliers>\n';
+    
+    data.forEach(supplier => {
+      xml += '  <supplier>\n';
+      xml += `    <id>${escapeXml(supplier.id.toString())}</id>\n`;
+      xml += `    <name>${escapeXml(supplier.name)}</name>\n`;
+      xml += `    <address>${escapeXml(supplier.address)}</address>\n`;
+      xml += `    <email>${escapeXml(supplier.email)}</email>\n`;
+      xml += `    <phone>${escapeXml(supplier.phone)}</phone>\n`;
+      xml += '  </supplier>\n';
+    });
+    
+    xml += '</suppliers>';
+    return xml;
   };
 
   const columns: Column[] = [
@@ -96,18 +114,25 @@ export default function SupplierListPage() {
         </Typography>
       ) : (
         <>
-          <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: "flex-start", flexWrap: "wrap", alignItems: "center" }}>
-            <TextField
-              label="Filter by Name"
-              variant="outlined"
-              size="small"
-              value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
-              sx={{ minWidth: 200 }}
+          <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: "space-between", flexWrap: "wrap", alignItems: "center" }}>
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
+              <TextField
+                label="Filter by Name"
+                variant="outlined"
+                size="small"
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                sx={{ minWidth: 200 }}
+              />
+              <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
+                Filter
+              </Button>
+            </Box>
+            <ExportButton
+              data={list}
+              fileName="suppliers.xml"
+              convertToXML={convertToXML}
             />
-            <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
-              Filter
-            </Button>
           </Box>
 
           {list.length > 0 ? (
