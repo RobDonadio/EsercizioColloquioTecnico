@@ -14,10 +14,11 @@ import {
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
-import { supplierApi, SupplierListQuery } from "../services/api";
+import { supplierApi } from "../services/api";
+import type { Supplier } from "../types/Supplier";
 
 export default function SupplierListPage() {
-  const [list, setList] = useState<SupplierListQuery[]>([]);
+  const [list, setList] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [nameFilter, setNameFilter] = useState<string>("");

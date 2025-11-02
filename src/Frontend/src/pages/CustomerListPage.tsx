@@ -18,10 +18,11 @@ import {
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
-import { customerApi, CustomerListQuery } from "../services/api";
+import { customerApi } from "../services/api";
+import type { Customer } from "../types/Customer";
 
 export default function CustomerListPage() {
-    const [list, setList] = useState<CustomerListQuery[]>([]);
+    const [list, setList] = useState<Customer[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [nameFilter, setNameFilter] = useState<string>("");
@@ -71,7 +72,7 @@ export default function CustomerListPage() {
         URL.revokeObjectURL(url);
     };
 
-    const convertToXML = (data: CustomerListQuery[]): string => {
+    const convertToXML = (data: Customer[]): string => {
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<customers>\n';
         
         data.forEach(customer => {
