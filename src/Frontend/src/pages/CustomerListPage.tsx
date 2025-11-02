@@ -2,17 +2,8 @@ import {
     Box,
     Button,
     CircularProgress,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     TextField,
     Typography,
-    styled,
-    tableCellClasses,
 } from "@mui/material";
 import {
     Person as PersonIcon,
@@ -26,6 +17,7 @@ import {
     Download as DownloadIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import { DataTable, Column } from "../components/DataTable";
 
 interface CustomerListQuery {
     id: number;
@@ -41,13 +33,6 @@ interface CustomerCategory {
     code: string;
     description: string;
 }
-
-const StyledTableHeadCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.primary.light,
-        color: theme.palette.common.white,
-    },
-}));
 
 export default function CustomerListPage() {
     const [list, setList] = useState<CustomerListQuery[]>([]);
@@ -136,24 +121,72 @@ export default function CustomerListPage() {
             .replace(/'/g, "&#039;");
     };
 
+    const columns: Column[] = [
+        {
+            id: "name",
+            label: "Name",
+            field: "name",
+            icon: <PersonIcon />,
+            sx: { fontWeight: 500 },
+        },
+        {
+            id: "address",
+            label: "Address",
+            field: "address",
+            icon: <LocationOnIcon />,
+        },
+        {
+            id: "email",
+            label: "Email",
+            field: "email",
+            icon: <EmailIcon />,
+        },
+        {
+            id: "phone",
+            label: "Phone",
+            field: "phone",
+            icon: <PhoneIcon />,
+        },
+        {
+            id: "iban",
+            label: "Iban",
+            field: "iban",
+            icon: <AccountBalanceIcon />,
+            sx: { fontFamily: 'monospace', fontSize: '0.9em' },
+        },
+        {
+            id: "code",
+            label: "Code",
+            field: "customerCategory.code",
+            icon: <CategoryIcon />,
+            sx: { fontWeight: 500 },
+        },
+        {
+            id: "description",
+            label: "Description",
+            field: "customerCategory.description",
+            icon: <DescriptionIcon />,
+        },
+    ];
+
     return (
-        <>
+        <Box sx={{ px: 2, pb: 4, width: '100%' }}>
             <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
                 Customers
             </Typography>
 
             {loading ? (
-                <div style={{ display: "flex", justifyContent: "center", marginTop: "3rem" }}>
+                <Box sx={{ display: "flex", justifyContent: "center", marginTop: "3rem" }}>
                     <CircularProgress />
-                </div>
+                </Box>
             ) : error ? (
                 <Typography variant="body1" color="error" sx={{ textAlign: "center", mb: 2 }}>
                     {error}
                 </Typography>
             ) : (
                 <>
-                    <Box sx={{ display: "flex", gap: 2, mb: 4, px: 2, justifyContent: "space-between", flexWrap: "wrap" }}>
-                        <Box sx={{ display: "flex", gap: 2 }}>
+                    <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: "space-between", flexWrap: "wrap", alignItems: "center" }}>
+                        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", alignItems: "center" }}>
                             <TextField
                                 label="Filter by Name"
                                 variant="outlined"
@@ -185,72 +218,10 @@ export default function CustomerListPage() {
                     </Box>
 
                     {list.length > 0 ? (
-                        <TableContainer component={Paper}>
-                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <PersonIcon />
-                                                Name
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <LocationOnIcon />
-                                                Address
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <EmailIcon />
-                                                Email
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <PhoneIcon />
-                                                Phone
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <AccountBalanceIcon />
-                                                Iban
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <CategoryIcon />
-                                                Code
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                        <StyledTableHeadCell>
-                                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                                <DescriptionIcon />
-                                                Description
-                                            </Box>
-                                        </StyledTableHeadCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {list.map((row) => (
-                                        <TableRow
-                                            key={row.id}
-                                            sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                                        >
-                                            <TableCell>{row.name}</TableCell>
-                                            <TableCell>{row.address}</TableCell>
-                                            <TableCell>{row.email}</TableCell>
-                                            <TableCell>{row.phone}</TableCell>
-                                            <TableCell>{row.iban}</TableCell>
-                                            <TableCell>{row.customerCategory?.code ?? ""}</TableCell>
-                                            <TableCell>{row.customerCategory?.description ?? ""}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                        <DataTable
+                            data={list}
+                            columns={columns}
+                        />
                     ) : (
                         <Typography variant="h4" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
                             No customers found
@@ -258,6 +229,6 @@ export default function CustomerListPage() {
                     )}
                 </>
             )}
-        </>
+        </Box>
     );
 }
