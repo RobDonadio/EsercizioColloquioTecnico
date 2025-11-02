@@ -14,10 +14,10 @@ import {
     Category as CategoryIcon,
     Description as DescriptionIcon,
     Search as SearchIcon,
-    Download as DownloadIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
+import { ExportButton, escapeXml } from "../components/ExportButton";
 import { customerApi } from "../services/api";
 import type { Customer } from "../types/Customer";
 
@@ -59,19 +59,6 @@ export default function CustomerListPage() {
         fetchCustomers();
     };
 
-    const handleExportXML = () => {
-        const xmlContent = convertToXML(list);
-        const blob = new Blob([xmlContent], { type: "application/xml" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "customers.xml";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
     const convertToXML = (data: Customer[]): string => {
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<customers>\n';
         
@@ -96,15 +83,6 @@ export default function CustomerListPage() {
         
         xml += '</customers>';
         return xml;
-    };
-
-    const escapeXml = (unsafe: string): string => {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
     };
 
     const columns: Column[] = [
@@ -193,14 +171,11 @@ export default function CustomerListPage() {
                                 Filter
                             </Button>
                         </Box>
-                        <Button 
-                            variant="outlined" 
-                            onClick={handleExportXML}
-                            disabled={list.length === 0}
-                            startIcon={<DownloadIcon />}
-                        >
-                            Export XML
-                        </Button>
+                        <ExportButton
+                            data={list}
+                            fileName="customers.xml"
+                            convertToXML={convertToXML}
+                        />
                     </Box>
 
                     {list.length > 0 ? (
