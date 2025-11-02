@@ -1,6 +1,8 @@
 import {
   Box,
+  Button,
   CircularProgress,
+  TextField,
   Typography,
 } from "@mui/material";
 import {
@@ -8,29 +10,25 @@ import {
   LocationOn as LocationOnIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
-
-interface SupplierListQuery {
-  id: number;
-  name: string;
-  address: string;
-  email: string;
-  phone: string;
-}
+import { supplierApi, SupplierListQuery } from "../services/api";
 
 export default function SupplierListPage() {
   const [list, setList] = useState<SupplierListQuery[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [nameFilter, setNameFilter] = useState<string>("");
 
-  useEffect(() => {
+  const fetchSuppliers = () => {
     setLoading(true);
-    fetch("/api/suppliers/list")
-      .then((response) => {
-        return response.json();
-      })
+    const filters: { name?: string } = {};
+    if (nameFilter) filters.name = nameFilter;
+    
+    // Passa i filtri solo se presente
+    supplierApi.list(nameFilter ? filters : undefined)
       .then((data) => {
         setList(data);
         setError(null);
@@ -43,7 +41,15 @@ export default function SupplierListPage() {
       .finally(() => {
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchSuppliers();
   }, []);
+
+  const handleFilter = () => {
+    fetchSuppliers();
+  };
 
   const columns: Column[] = [
     {
@@ -87,15 +93,33 @@ export default function SupplierListPage() {
         <Typography variant="body1" color="error" sx={{ textAlign: "center", mb: 2 }}>
           {error}
         </Typography>
-      ) : list.length > 0 ? (
-        <DataTable
-          data={list}
-          columns={columns}
-        />
       ) : (
-        <Typography variant="h6" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
-          No suppliers found
-        </Typography>
+        <>
+          <Box sx={{ display: "flex", gap: 2, mb: 4, justifyContent: "flex-start", flexWrap: "wrap", alignItems: "center" }}>
+            <TextField
+              label="Filter by Name"
+              variant="outlined"
+              size="small"
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              sx={{ minWidth: 200 }}
+            />
+            <Button variant="contained" onClick={handleFilter} startIcon={<SearchIcon />}>
+              Filter
+            </Button>
+          </Box>
+
+          {list.length > 0 ? (
+            <DataTable
+              data={list}
+              columns={columns}
+            />
+          ) : (
+            <Typography variant="h6" sx={{ textAlign: "center", mt: 4, mb: 4 }}>
+              No suppliers found
+            </Typography>
+          )}
+        </>
       )}
     </Box>
   );

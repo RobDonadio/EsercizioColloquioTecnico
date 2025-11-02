@@ -18,21 +18,7 @@ import {
 } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { DataTable, Column } from "../components/DataTable";
-
-interface CustomerListQuery {
-    id: number;
-    name: string;
-    address: string;
-    email: string;
-    phone: string;
-    iban: string;
-    customerCategory?: CustomerCategory;
-}
-
-interface CustomerCategory {
-    code: string;
-    description: string;
-}
+import { customerApi, CustomerListQuery } from "../services/api";
 
 export default function CustomerListPage() {
     const [list, setList] = useState<CustomerListQuery[]>([]);
@@ -43,14 +29,13 @@ export default function CustomerListPage() {
 
     const fetchCustomers = () => {
         setLoading(true);
-        const params = new URLSearchParams();
-        if (nameFilter) params.append("name", nameFilter);
-        if (emailFilter) params.append("email", emailFilter);
+        const filters: { name?: string; email?: string } = {};
+        if (nameFilter) filters.name = nameFilter;
+        if (emailFilter) filters.email = emailFilter;
         
-        fetch(`/api/customers/list?${params.toString()}`)
-            .then((response) => {
-                return response.json();
-            })
+        // Passa i filtri solo se almeno uno è presente
+        const hasFilters = nameFilter || emailFilter;
+        customerApi.list(hasFilters ? filters : undefined)
             .then((data) => {
                 setList(data);
                 setError(null);
