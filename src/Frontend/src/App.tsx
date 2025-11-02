@@ -10,8 +10,8 @@ function App() {
       <CssBaseline />
       <Router>
         <ShellHeader />
-        <Container sx={{pl:1}}>
-        <AppRoutes />
+        <Container maxWidth={false} sx={{ pl: 1 }}>
+          <AppRoutes />
         </Container>
       </Router>
     </>
